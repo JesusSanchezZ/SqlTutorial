@@ -250,3 +250,78 @@ where time < all
 
 
 ------------------ ELIMINANDO REGISTROS DUPLICADOS    ----------------------------------------------
+CREATE table Tabla_con_Duplicados(
+	Nombre varchar(40),
+	Profesion varchar(40),
+	Empresa varchar(50)
+)
+
+insert into Tabla_con_Duplicados
+values ('José Chávez','Ingeniero','HP'),
+	   ('Andrés Ramirez','Abogado','Notaría 16'),
+	   ('Benito Macías','Contador','Seguros Monterrey'),
+	   ('Rogelio Martínez','Médico','Hospital San Javier'),
+	   ('Benito Macías','Contador','Seguros Monterrey'),
+	   ('Benito Macías','Contador','Seguros Monterrey'),
+	   ('José Chávez','Ingeniero','HP')
+
+
+select *, count(*) over (partition by Nombre, Profesion, Empresa) as Conteo
+from Tabla_con_Duplicados
+
+select *, row_number() over (partition by Nombre, Profesion, Empresa order by Nombre) as Enumeracion
+from Tabla_con_Duplicados
+
+select *
+from (select *, row_number() over (partition by Nombre, Profesion, Empresa order by Nombre, Profesion, Empresa) as Enumeracion
+	from Tabla_con_Duplicados) as Enumeracion_Duplicados  -- Esta es una Tabla Derivada
+where Enumeracion_Duplicados.Enumeracion > 1
+
+delete Enumeracion_Duplicados
+from (select *, row_number() over (partition by Nombre, Profesion, Empresa order by Nombre, Profesion, Empresa) as Enumeracion
+	from Tabla_con_Duplicados) as Enumeracion_Duplicados
+where Enumeracion_Duplicados.Enumeracion > 1
+
+select *, count(*) over (partition by Nombre, Profesion, Empresa order by Nombre, Profesion, Empresa) as Conteo
+from Tabla_con_Duplicados
+
+select * 
+from Tabla_con_Duplicados
+
+
+------------------------------  DROP Y TRUNCATE  ------------------------------------------------
+
+DELETE FROM Maraton_Modificada
+where time < all
+	(select time 
+		from Maraton_Modificada where home = 'MEX');
+
+
+create table Profesionistas(
+	ID integer identity(1,1),
+	Nombre varchar(40),
+	Profesion varchar(40),
+	Empresa varchar(40)
+)
+
+insert into Profesionistas
+values ('José Chávez','Ingeniero','HP'),
+	   ('Andrés Ramirez','Abogado','Notaría 16'),
+	   ('Benito Mecías','Contador','Seguros Monterrey'),
+	   ('Rogelio Martínez','Médico','Hospital San Javier')
+
+select * from Profesionistas
+
+delete Profesionistas
+
+truncate table Profesionistas
+
+alter table Profesionistas
+drop column Empresa
+
+alter table Profesionistas
+drop column if exists Profesion
+
+drop table Profesionistas
+
+drop table if exists Profesionistas
